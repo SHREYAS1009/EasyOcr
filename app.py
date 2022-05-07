@@ -1,6 +1,7 @@
 from flask import Flask, flash, request, redirect, url_for, render_template
 import urllib.request
 import os
+from flask import Response
 from werkzeug.utils import secure_filename
 import os
 import easyocr
@@ -55,9 +56,13 @@ def upload_image():
             top_left = tuple(detection[0][0])
             bottom_right = tuple(detection[0][2])
             text = detection[1]
-            img = cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 3)
-            img = cv2.putText(img, text, (20, spacer), font, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
-            spacer += 15
+            if(len(text)==0):
+               return{"msg":"Upload proper image,EasyOcr cannot work for this image"},500
+
+            else:
+                 img = cv2.rectangle(img, top_left, bottom_right, (0, 255, 0), 3)
+                 img = cv2.putText(img, text, (20, spacer), font, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
+                 spacer += 15
 
         plt.figure(figsize=(10, 10))
         plt.imshow(img)
@@ -67,15 +72,16 @@ def upload_image():
 
 
     else:
-        flash('Allowed image types are -> png, jpg, jpeg, gif')
-        return redirect(request.url)
+         flash('Allowed image types are -> png, jpg, jpeg, gif')
+         return redirect(request.url)
 
 
 @app.route('/display/<filename>')
 def display_image(filename):
     # print('display_image filename: ' + filename)
-     return redirect(url_for('static', filename='uploads/' +filename), code=301)
 
+
+    return redirect(url_for('static', filename='uploads/' +filename), code=301)
 
 if __name__ == "__main__":
     app.run()
